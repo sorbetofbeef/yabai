@@ -751,7 +751,7 @@ static void do_window_group_remove(const char *message)
     uint32_t child = token_to_uint32t(child_token);
     if (!child) return;
 
-    CGSRemoveWindowFromWindowMovementGroup(_connection, parent, child);
+    /* CGSRemoveWindowFromWindowMovementGroup(_connection, parent, child); */
     CGSRemoveFromOrderingGroup(_connection, child);
 }
 
