@@ -195,6 +195,17 @@ static inline bool window_node_is_right_child(struct window_node *node)
     return node->parent && node->parent->right == node;
 }
 
+static inline bool window_node_is_occluded_by_zoom(struct window_node *node)
+{
+    if (!node->parent) return false;
+    
+    if (window_node_is_right_child(node) && node->parent->left->zoom == node->parent)
+      return true;
+    else if (window_node_is_left_child(node) && node->parent->right->zoom == node->parent)
+      return true;
+    return window_node_is_occluded_by_zoom(node->parent);
+}
+
 static inline struct equalize_node equalize_node_add(struct equalize_node a, struct equalize_node b)
 {
     return (struct equalize_node) { a.y_count + b.y_count, a.x_count + b.x_count, };
@@ -372,11 +383,6 @@ struct window_node *window_node_find_first_leaf(struct window_node *root)
 {
     struct window_node *node = root;
     while (!window_node_is_leaf(node)) {
-        if (node->right && node->right->zoom == node) {
-          node = node->right;
-          break;
-        }
-
         node = node->left;
     }
     return node;
@@ -504,6 +510,7 @@ struct window_node *view_find_window_node_in_direction(struct view *view, struct
 
     struct window_node *target = window_node_find_first_leaf(view->root);
     while (target) {
+        if (window_node_is_occluded_by_zoom(target)) goto next;
         CGPoint target_point = area_center(target->area);
         int distance = euclidean_distance(source_point, target_point);
         if (distance >= best_distance) goto next;
