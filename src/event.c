@@ -423,6 +423,7 @@ static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_MOVED)
     }
 
     CGPoint new_origin = window_ax_origin(window);
+    if (window->border.id) SLSMoveWindow(g_connection, window->border.id, &new_origin);
     if (CGPointEqualToPoint(new_origin, window->frame.origin)) {
         debug("%s:DEBOUNCED %s %d\n", __FUNCTION__, window->application->name, window->id);
         return EVENT_FAILURE;

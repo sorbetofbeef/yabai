@@ -737,7 +737,7 @@ static void do_window_group_add(const char *message)
     uint32_t child = token_to_uint32t(child_token);
     if (!child) return;
 
-    CGSAddWindowToWindowMovementGroup(_connection, parent, child);
+    /* CGSAddWindowToWindowMovementGroup(_connection, parent, child); */
     CGSAddWindowToWindowOrderingGroup(_connection, parent, child, 1);
 }
 
