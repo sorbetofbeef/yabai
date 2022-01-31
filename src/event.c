@@ -428,7 +428,7 @@ static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_MOVED)
         return EVENT_FAILURE;
     }
 
-    if (window->border.id) SLSMoveWindow(g_connection, window->border.id, &new_origin);
+    if (window->border.id && !window->border.in_movement_group) SLSMoveWindow(g_connection, window->border.id, &new_origin);
     debug("%s: %s %d\n", __FUNCTION__, window->application->name, window->id);
     event_signal_push(SIGNAL_WINDOW_MOVED, window);
     window->frame.origin = new_origin;
@@ -726,7 +726,6 @@ static EVENT_CALLBACK(EVENT_HANDLER_MOUSE_UP)
     if (g_mouse_state.window->border.id && g_mouse_state.window->border.in_movement_group) {
       scripting_addition_remove_from_window_movement_group(g_mouse_state.window->border.id, g_mouse_state.window->id);
       g_mouse_state.window->border.in_movement_group = false;
-      printf("Removed\n");
     } 
 
     struct view *src_view = window_manager_find_managed_window(&g_window_manager, g_mouse_state.window);
@@ -803,7 +802,6 @@ static EVENT_CALLBACK(EVENT_HANDLER_MOUSE_DRAGGED)
     if (g_mouse_state.window->border.id && !g_mouse_state.window->border.in_movement_group) {
       scripting_addition_add_to_window_movement_group(g_mouse_state.window->border.id, g_mouse_state.window->id);
       g_mouse_state.window->border.in_movement_group = true;
-      printf("Added\n");
     } 
 
     CGPoint point = CGEventGetLocation(context);
