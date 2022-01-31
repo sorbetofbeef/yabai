@@ -7,6 +7,7 @@
 
 struct border
 {
+    bool in_movement_group;
     uint32_t id;
     CGContextRef context;
     CFTypeRef region;

@@ -727,7 +727,7 @@ static void do_window_shadow(const char *message)
     }
 }
 
-static void do_window_group_add(const char *message)
+static void do_window_ordering_group_add(const char *message)
 {
     Token parent_token = get_token(&message);
     uint32_t parent = token_to_uint32t(parent_token);
@@ -737,11 +737,10 @@ static void do_window_group_add(const char *message)
     uint32_t child = token_to_uint32t(child_token);
     if (!child) return;
 
-    /* CGSAddWindowToWindowMovementGroup(_connection, parent, child); */
     CGSAddWindowToWindowOrderingGroup(_connection, parent, child, 1);
 }
 
-static void do_window_group_remove(const char *message)
+static void do_window_movement_group_add(const char *message)
 {
     Token parent_token = get_token(&message);
     uint32_t parent = token_to_uint32t(parent_token);
@@ -751,8 +750,33 @@ static void do_window_group_remove(const char *message)
     uint32_t child = token_to_uint32t(child_token);
     if (!child) return;
 
-    /* CGSRemoveWindowFromWindowMovementGroup(_connection, parent, child); */
+    CGSAddWindowToWindowMovementGroup(_connection, parent, child);
+}
+
+static void do_window_ordering_group_remove(const char *message)
+{
+    Token parent_token = get_token(&message);
+    uint32_t parent = token_to_uint32t(parent_token);
+    if (!parent) return;
+
+    Token child_token = get_token(&message);
+    uint32_t child = token_to_uint32t(child_token);
+    if (!child) return;
+
     CGSRemoveFromOrderingGroup(_connection, child);
+}
+
+static void do_window_movement_group_remove(const char *message)
+{
+    Token parent_token = get_token(&message);
+    uint32_t parent = token_to_uint32t(parent_token);
+    if (!parent) return;
+
+    Token child_token = get_token(&message);
+    uint32_t child = token_to_uint32t(child_token);
+    if (!child) return;
+
+    CGSRemoveWindowFromWindowMovementGroup(_connection, parent, child);
 }
 
 static void do_handshake(int sockfd)
@@ -808,10 +832,14 @@ static void handle_message(int sockfd, const char *message)
         do_window_focus(message);
     } else if (token_equals(token, "window_shadow")) {
         do_window_shadow(message);
-    } else if (token_equals(token, "window_group_add")) {
-        do_window_group_add(message);
-    } else if (token_equals(token, "window_group_remove")) {
-        do_window_group_remove(message);
+    } else if (token_equals(token, "window_ordering_group_add")) {
+        do_window_ordering_group_add(message);
+    } else if (token_equals(token, "window_ordering_group_remove")) {
+        do_window_ordering_group_remove(message);
+    } else if (token_equals(token, "window_movement_group_add")) {
+        do_window_movement_group_add(message);
+    } else if (token_equals(token, "window_movement_group_remove")) {
+        do_window_movement_group_remove(message);
     }
 }
 

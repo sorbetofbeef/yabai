@@ -723,6 +723,12 @@ static EVENT_CALLBACK(EVENT_HANDLER_MOUSE_UP)
     CGPoint point = CGEventGetLocation(context);
     debug("%s: %.2f, %.2f\n", __FUNCTION__, point.x, point.y);
 
+    if (g_mouse_state.window->border.id && g_mouse_state.window->border.in_movement_group) {
+      scripting_addition_remove_from_window_movement_group(g_mouse_state.window->border.id, g_mouse_state.window->id);
+      g_mouse_state.window->border.in_movement_group = false;
+      printf("Removed\n");
+    } 
+
     struct view *src_view = window_manager_find_managed_window(&g_window_manager, g_mouse_state.window);
     if (!src_view) goto err;
 
@@ -793,6 +799,12 @@ static EVENT_CALLBACK(EVENT_HANDLER_MOUSE_DRAGGED)
         CFRelease(context);
         return EVENT_SUCCESS;
     }
+
+    if (g_mouse_state.window->border.id && !g_mouse_state.window->border.in_movement_group) {
+      scripting_addition_add_to_window_movement_group(g_mouse_state.window->border.id, g_mouse_state.window->id);
+      g_mouse_state.window->border.in_movement_group = true;
+      printf("Added\n");
+    } 
 
     CGPoint point = CGEventGetLocation(context);
     debug("%s: %.2f, %.2f\n", __FUNCTION__, point.x, point.y);
