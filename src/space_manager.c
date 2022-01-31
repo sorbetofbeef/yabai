@@ -615,6 +615,12 @@ void space_manager_move_window_to_space(uint64_t sid, struct window *window)
     CFArrayRef window_list_ref = cfarray_of_cfnumbers(&window->id, sizeof(uint32_t), 1, kCFNumberSInt32Type);
     SLSMoveWindowsToManagedSpace(g_connection, window_list_ref, sid);
     CFRelease(window_list_ref);
+
+    if (window->border.id) {
+      window_list_ref = cfarray_of_cfnumbers(&window->border.id, sizeof(uint32_t), 1, kCFNumberSInt32Type);
+      SLSMoveWindowsToManagedSpace(g_connection, window_list_ref, sid);
+      CFRelease(window_list_ref);
+    }
 }
 
 enum space_op_error space_manager_focus_space(uint64_t sid)
