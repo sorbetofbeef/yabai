@@ -103,6 +103,7 @@ int workspace_display_has_notch(uint32_t did)
 {
     if (!CGDisplayIsBuiltin(did)) return 0;
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
     if (__builtin_available(macos 12.0, *)) {
         for (NSScreen *screen in [NSScreen screens]) {
             if ([[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue] == did) {
@@ -110,6 +111,7 @@ int workspace_display_has_notch(uint32_t did)
             }
         }
     }
+#endif
 
     return 0;
 }

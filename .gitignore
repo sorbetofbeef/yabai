@@ -1,3 +1,4 @@
+.DS_Store
 /bin
 /archive
 /src/osax/loader_bin.c
