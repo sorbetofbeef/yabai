@@ -726,6 +726,8 @@ static EVENT_CALLBACK(EVENT_HANDLER_MOUSE_UP)
     if (g_mouse_state.window->border.id && g_mouse_state.window->border.in_movement_group) {
       scripting_addition_remove_from_window_movement_group(g_mouse_state.window->border.id, g_mouse_state.window->id);
       g_mouse_state.window->border.in_movement_group = false;
+      CGPoint new_origin = window_ax_origin(g_mouse_state.window);
+      SLSMoveWindow(g_connection, g_mouse_state.window->border.id, &new_origin);
     } 
 
     struct view *src_view = window_manager_find_managed_window(&g_window_manager, g_mouse_state.window);
