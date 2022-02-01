@@ -93,16 +93,8 @@ CGRect display_bounds_constrained(uint32_t did)
 {
     CGRect frame  = display_bounds(did);
 
-    if ((g_display_manager.mode == EXTERNAL_BAR_MAIN &&
-         did == display_manager_main_display_id()) ||
-        (g_display_manager.mode == EXTERNAL_BAR_ALL)) {
-        frame.origin.y    += g_display_manager.top_padding;
-        frame.size.height -= g_display_manager.top_padding;
-        frame.size.height -= g_display_manager.bottom_padding;
-    }
-
+    int notch_height = workspace_display_has_notch(did);
     if (display_manager_menu_bar_hidden()) {
-        int notch_height = workspace_display_has_notch(did);
         if (notch_height) {
             frame.origin.y    += notch_height;
             frame.size.height -= notch_height;
@@ -111,6 +103,14 @@ CGRect display_bounds_constrained(uint32_t did)
         CGRect menu = display_manager_menu_bar_rect(did);
         frame.origin.y    += menu.size.height;
         frame.size.height -= menu.size.height;
+    }
+
+    if ((g_display_manager.mode == EXTERNAL_BAR_MAIN &&
+         did == display_manager_main_display_id()) ||
+        (g_display_manager.mode == EXTERNAL_BAR_ALL)) {
+        frame.origin.y    += (g_display_manager.top_padding - notch_height > 0 ? g_display_manager.top_padding - notch_height : 0);
+        frame.size.height -= (g_display_manager.top_padding - notch_height > 0 ? g_display_manager.top_padding - notch_height : 0);
+        frame.size.height -= g_display_manager.bottom_padding;
     }
 
     if (!display_manager_dock_hidden()) {
