@@ -199,10 +199,10 @@ static inline bool window_node_is_occluded_by_zoom(struct window_node *node)
 {
     if (!node->parent) return false;
     
-    if (window_node_is_right_child(node) && node->parent->left->zoom == node->parent)
+    if ((window_node_is_right_child(node) && node->parent->left->zoom == node->parent) ||
+        (window_node_is_left_child(node) && node->parent->right->zoom == node->parent))
       return true;
-    else if (window_node_is_left_child(node) && node->parent->right->zoom == node->parent)
-      return true;
+
     return window_node_is_occluded_by_zoom(node->parent);
 }
 
@@ -510,9 +510,14 @@ struct window_node *view_find_window_node_in_direction(struct view *view, struct
 
     struct window_node *target = window_node_find_first_leaf(view->root);
     while (target) {
+        if (target->zoom == view->root) {
+          if (target != source) return target;
+          else return NULL;
+        }
         if (window_node_is_occluded_by_zoom(target)) goto next;
         CGPoint target_point = area_center(target->area);
         int distance = euclidean_distance(source_point, target_point);
+
         if (distance >= best_distance) goto next;
 
         switch (direction) {
