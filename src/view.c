@@ -506,7 +506,22 @@ struct window_node *view_find_window_node_in_direction(struct view *view, struct
 {
     int best_distance = INT_MAX;
     struct window_node *best_node = NULL;
-    CGPoint source_point = area_center(source->area);
+
+    CGPoint source_point;
+    switch (direction) {
+      case DIR_EAST: {
+        source_point = (CGPoint){source->area.x + source->area.w, source->area.y + source->area.h / 2.};
+      } break;
+      case DIR_SOUTH: {
+        source_point = (CGPoint){source->area.x + source->area.w / 2., source->area.y + source->area.h};
+      } break;
+      case DIR_WEST: {
+        source_point = (CGPoint){source->area.x, source->area.y + source->area.h / 2.};
+      } break;
+      case DIR_NORTH: {
+        source_point = (CGPoint){source->area.x + source->area.w / 2., source->area.y};
+      } break;
+    }
 
     struct window_node *target = window_node_find_first_leaf(view->root);
     while (target) {
@@ -515,36 +530,51 @@ struct window_node *view_find_window_node_in_direction(struct view *view, struct
           else return NULL;
         }
         if (window_node_is_occluded_by_zoom(target)) goto next;
-        CGPoint target_point = area_center(target->area);
+
+        CGPoint target_point;
+        switch (direction) {
+          case DIR_WEST: {
+            target_point = (CGPoint){target->area.x + target->area.w, target->area.y + target->area.h / 2.};
+          } break;
+          case DIR_NORTH: {
+            target_point = (CGPoint){target->area.x + target->area.w / 2., target->area.y + target->area.h};
+          } break;
+          case DIR_EAST: {
+            target_point = (CGPoint){target->area.x, target->area.y + target->area.h / 2.};
+          } break;
+          case DIR_SOUTH: {
+            target_point = (CGPoint){target->area.x + target->area.w / 2., target->area.y};
+          } break;
+        }
         int distance = euclidean_distance(source_point, target_point);
 
         if (distance >= best_distance) goto next;
 
         switch (direction) {
-        case DIR_EAST: {
-            if (target->area.x >= source->area.x + source->area.w) {
-                best_node = target;
-                best_distance = distance;
-            }
-        } break;
-        case DIR_SOUTH: {
-            if (target->area.y >= source->area.y + source->area.h) {
-                best_node = target;
-                best_distance = distance;
-            }
-        } break;
-        case DIR_WEST: {
-            if (target->area.x + target->area.w <= source->area.x) {
-                best_node = target;
-                best_distance = distance;
-            }
-        } break;
-        case DIR_NORTH: {
-            if (target->area.y + target->area.h <= source->area.y) {
-                best_node = target;
-                best_distance = distance;
-            }
-        } break;
+          case DIR_EAST: {
+              if (target->area.x >= source->area.x + source->area.w) {
+                  best_node = target;
+                  best_distance = distance;
+              }
+          } break;
+          case DIR_SOUTH: {
+              if (target->area.y >= source->area.y + source->area.h) {
+                  best_node = target;
+                  best_distance = distance;
+              }
+          } break;
+          case DIR_WEST: {
+              if (target->area.x + target->area.w <= source->area.x) {
+                  best_node = target;
+                  best_distance = distance;
+              }
+          } break;
+          case DIR_NORTH: {
+              if (target->area.y + target->area.h <= source->area.y) {
+                  best_node = target;
+                  best_distance = distance;
+              }
+          } break;
         }
 
 next:
