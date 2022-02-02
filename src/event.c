@@ -152,6 +152,17 @@ static EVENT_CALLBACK(EVENT_HANDLER_APPLICATION_TERMINATED)
 
         struct view *view = window_manager_find_managed_window(&g_window_manager, window);
         if (view) {
+            if (i == window_count - 1) {
+              struct window *focused_window = window_manager_focused_window(&g_window_manager);
+              if (focused_window && focused_window->application == application) {
+                struct window *closest_window = window_manager_find_closest_managed_window_in_direction(&g_window_manager, focused_window, DIR_EAST);
+                if (!closest_window) closest_window = window_manager_find_closest_managed_window_in_direction(&g_window_manager, focused_window, DIR_WEST);
+                if (!closest_window) closest_window = window_manager_find_closest_managed_window_in_direction(&g_window_manager, focused_window, DIR_SOUTH);
+                if (!closest_window) closest_window = window_manager_find_closest_managed_window_in_direction(&g_window_manager, focused_window, DIR_NORTH);
+                if (closest_window) window_manager_focus_window_with_raise(&closest_window->application->psn, closest_window->id, closest_window->ref);
+              }
+            }
+
             space_manager_untile_window(&g_space_manager, view, window);
             window_manager_remove_managed_window(&g_window_manager, window->id);
         }
