@@ -39,7 +39,7 @@ extern int CGSMainConnectionID(void);
 extern CGError CGSGetConnectionPSN(int cid, ProcessSerialNumber *psn);
 extern CGError CGSSetWindowAlpha(int cid, uint32_t wid, float alpha);
 extern CGError CGSSetWindowListAlpha(int cid, const uint32_t *window_list, int window_count, float alpha, float duration);
-extern CGError CGSSetWindowLevel(int cid, uint32_t wid, int level);
+extern CGError CGSSetWindowLevelForGroup(int cid, uint32_t wid, int level);
 extern OSStatus CGSMoveWindowWithGroup(const int cid, const uint32_t wid, CGPoint *point);
 extern CGError CGSReassociateWindowsSpacesByGeometry(int cid, CFArrayRef window_list);
 extern CGError CGSGetWindowOwner(int cid, uint32_t wid, int *window_cid);
@@ -48,10 +48,6 @@ extern CGError CGSClearWindowTags(int cid, uint32_t wid, const int tags[2], size
 extern CGError CGSGetWindowBounds(int cid, uint32_t wid, CGRect *frame);
 extern CGError CGSGetWindowTransform(int cid, uint32_t wid, CGAffineTransform *t);
 extern CGError CGSSetWindowTransform(int cid, uint32_t wid, CGAffineTransform t);
-extern CGError CGSAddWindowToWindowMovementGroup(int cid, uint32_t parent_wid, uint32_t child_wid);
-extern CGError CGSRemoveWindowFromWindowMovementGroup(int cid, uint32_t parent_wid, uint32_t child_wid);
-extern CGError CGSAddWindowToWindowOrderingGroup(int cid, uint32_t parent_wid, uint32_t child_wid, int order);
-extern CGError CGSRemoveFromOrderingGroup(int cid, uint32_t wid);
 extern void CGSManagedDisplaySetCurrentSpace(int cid, CFStringRef display_ref, uint64_t spid);
 extern uint64_t CGSManagedDisplayGetCurrentSpace(int cid, CFStringRef display_ref);
 extern CFArrayRef CGSCopyManagedDisplaySpaces(const int cid);
@@ -197,6 +193,12 @@ uint64_t decode_adrp_add(uint64_t addr, uint64_t offset)
     return (offset & 0xf000) + value_64 + imm12;
 }
 #endif
+
+static bool is_macos_monterey(void)
+{
+    NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
+    return version.majorVersion == 12;
+}
 
 static bool verify_os_version(NSOperatingSystemVersion os_version)
 {
@@ -675,7 +677,7 @@ static void do_window_level(const char *message)
 
     Token key_token = get_token(&message);
     int key = token_to_int(key_token);
-    CGSSetWindowLevel(_connection, wid, CGWindowLevelForKey(key));
+    CGSSetWindowLevelForGroup(_connection, wid, CGWindowLevelForKey(key));
 }
 
 static void do_window_sticky(const char *message)
@@ -725,58 +727,6 @@ static void do_window_shadow(const char *message)
     } else {
         CGSSetWindowTags(_connection, wid, tags, 32);
     }
-}
-
-static void do_window_ordering_group_add(const char *message)
-{
-    Token parent_token = get_token(&message);
-    uint32_t parent = token_to_uint32t(parent_token);
-    if (!parent) return;
-
-    Token child_token = get_token(&message);
-    uint32_t child = token_to_uint32t(child_token);
-    if (!child) return;
-
-    CGSAddWindowToWindowOrderingGroup(_connection, parent, child, 1);
-}
-
-static void do_window_movement_group_add(const char *message)
-{
-    Token parent_token = get_token(&message);
-    uint32_t parent = token_to_uint32t(parent_token);
-    if (!parent) return;
-
-    Token child_token = get_token(&message);
-    uint32_t child = token_to_uint32t(child_token);
-    if (!child) return;
-
-    CGSAddWindowToWindowMovementGroup(_connection, parent, child);
-}
-
-static void do_window_ordering_group_remove(const char *message)
-{
-    Token parent_token = get_token(&message);
-    uint32_t parent = token_to_uint32t(parent_token);
-    if (!parent) return;
-
-    Token child_token = get_token(&message);
-    uint32_t child = token_to_uint32t(child_token);
-    if (!child) return;
-
-    CGSRemoveFromOrderingGroup(_connection, child);
-}
-
-static void do_window_movement_group_remove(const char *message)
-{
-    Token parent_token = get_token(&message);
-    uint32_t parent = token_to_uint32t(parent_token);
-    if (!parent) return;
-
-    Token child_token = get_token(&message);
-    uint32_t child = token_to_uint32t(child_token);
-    if (!child) return;
-
-    CGSRemoveWindowFromWindowMovementGroup(_connection, parent, child);
 }
 
 static void do_handshake(int sockfd)
@@ -832,14 +782,6 @@ static void handle_message(int sockfd, const char *message)
         do_window_focus(message);
     } else if (token_equals(token, "window_shadow")) {
         do_window_shadow(message);
-    } else if (token_equals(token, "window_ordering_group_add")) {
-        do_window_ordering_group_add(message);
-    } else if (token_equals(token, "window_ordering_group_remove")) {
-        do_window_ordering_group_remove(message);
-    } else if (token_equals(token, "window_movement_group_add")) {
-        do_window_movement_group_add(message);
-    } else if (token_equals(token, "window_movement_group_remove")) {
-        do_window_movement_group_remove(message);
     }
 }
 
