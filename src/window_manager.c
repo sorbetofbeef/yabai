@@ -960,7 +960,6 @@ struct window **window_manager_find_application_windows(struct window_manager *w
 struct window *window_manager_create_and_add_window(struct space_manager *sm, struct window_manager *wm, struct application *application, AXUIElementRef window_ref, uint32_t window_id)
 {
     struct window *window = window_create(application, window_ref, window_id);
-
     if (window_is_unknown(window)) {
         debug("%s: ignoring AXUnknown window %s %d\n", __FUNCTION__, window->application->name, window->id);
         window_manager_remove_lost_focused_event(wm, window->id);

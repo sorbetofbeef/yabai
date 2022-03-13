@@ -320,6 +320,8 @@ static EVENT_CALLBACK(EVENT_HANDLER_APPLICATION_HIDDEN)
 
 static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_CREATED)
 {
+    double opacity = g_window_manager.normal_window_opacity;
+    g_window_manager.normal_window_opacity = 0.;
     uint32_t window_id = ax_window_id(context);
     if (!window_id) goto err;
 
@@ -351,11 +353,15 @@ static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_CREATED)
     }
 
     event_signal_push(SIGNAL_WINDOW_CREATED, window);
+    g_window_manager.normal_window_opacity = opacity;
+    scripting_addition_set_opacity(window_id, opacity, 0.f);
     return EVENT_SUCCESS;
 
 err:
     CFRelease(context);
 out:
+    g_window_manager.normal_window_opacity = opacity;
+    scripting_addition_set_opacity(window_id, 1.f, 0.f);
     return EVENT_FAILURE;
 }
 
