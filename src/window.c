@@ -471,7 +471,6 @@ struct window *window_create(struct application *application, AXUIElementRef win
     window->id_ptr = &window->id;
     window->has_shadow = true;
 
-    if (g_window_manager.enable_window_border) border_create(window);
 
     return window;
 }

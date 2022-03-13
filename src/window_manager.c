@@ -150,7 +150,7 @@ void window_manager_apply_rule_to_window(struct space_manager *sm, struct window
     }
 
     if (rule->border == RULE_PROP_ON) {
-        border_create(window);
+        // border_create(window);
     } else if (rule->border == RULE_PROP_OFF) {
         border_destroy(window);
     }
@@ -308,6 +308,7 @@ void window_manager_add_managed_window(struct window_manager *wm, struct window 
     if (view->layout == VIEW_FLOAT) return;
     table_add(&wm->managed_window, &window->id, view);
     window_manager_purify_window(wm, window);
+    if (g_window_manager.enable_window_border) border_create(window);
 }
 
 enum window_op_error window_manager_adjust_window_ratio(struct window_manager *wm, struct window *window, int type, float ratio)
@@ -415,6 +416,8 @@ void window_manager_move_window(struct window *window, float x, float y)
     CFTypeRef position_ref = AXValueCreate(kAXValueTypeCGPoint, (void *) &position);
     if (!position_ref) return;
 
+    window->frame.origin = position;
+    if (window->border.id) SLSMoveWindow(g_connection, window->border.id, &position);
     AXUIElementSetAttributeValue(window->ref, kAXPositionAttribute, position_ref);
 
     CFRelease(position_ref);
@@ -426,6 +429,9 @@ void window_manager_resize_window(struct window *window, float width, float heig
     CFTypeRef size_ref = AXValueCreate(kAXValueTypeCGSize, (void *) &size);
     if (!size_ref) return;
 
+    window->frame.size = size;
+
+    if (window->border.id) border_resize(window);
     AXUIElementSetAttributeValue(window->ref, kAXSizeAttribute, size_ref);
     CFRelease(size_ref);
 }
@@ -433,7 +439,7 @@ void window_manager_resize_window(struct window *window, float width, float heig
 void window_manager_set_window_frame(struct window *window, float x, float y, float width, float height)
 {
     AX_ENHANCED_UI_WORKAROUND(window->application->ref, {
-        window_manager_resize_window(window, width, height);
+        // window_manager_resize_window(window, width, height);
         window_manager_move_window(window, x, y);
         window_manager_resize_window(window, width, height);
     });

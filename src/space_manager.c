@@ -405,12 +405,6 @@ struct view *space_manager_tile_window_on_space_with_insertion_point(struct spac
 
     view_add_window_node(view, window);
 
-    if (space_is_visible(view->sid)) {
-        view_flush(view);
-    } else {
-        view->is_dirty = true;
-    }
-
     if (view->layout == VIEW_BSP && insertion_point) {
         view->insertion_point = prev_insertion_point;
     }

@@ -279,6 +279,12 @@ static void window_node_split(struct view *view, struct window_node *node, struc
     node->zoom  = NULL;
 
     area_make_pair(view, node);
+
+    if (space_is_visible(view->sid)) {
+        window_node_flush(node);
+    } else {
+        view->is_dirty = true;
+    }
 }
 
 void window_node_update(struct view *view, struct window_node *node)
@@ -688,6 +694,11 @@ void view_stack_window_node(struct view *view, struct window_node *node, struct 
     node->window_list[node->window_count] = window->id;
     node->window_order[node->window_count] = window->id;
     ++node->window_count;
+    if (space_is_visible(view->sid)) {
+      window_node_flush(node);
+    } else {
+      view->is_dirty = true;
+    }
 }
 
 void view_add_window_node(struct view *view, struct window *window)
@@ -725,6 +736,7 @@ void view_add_window_node(struct view *view, struct window *window)
         if (g_space_manager.auto_balance) {
             window_node_equalize(view->root, SPLIT_X | SPLIT_Y);
             view_update(view);
+            view_flush(view);
         }
     } else if (view->layout == VIEW_STACK) {
         view_stack_window_node(view, view->root, window);
