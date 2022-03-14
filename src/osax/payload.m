@@ -823,26 +823,16 @@ static mach_port_t mach_get_bs_port() {
   return port;
 }
 
-static void mach_receive_message(mach_port_t port, struct mach_buffer* buffer,
-                                                   bool timeout               ) {
+static void mach_receive_message(mach_port_t port, struct mach_buffer* buffer) {
   *buffer = (struct mach_buffer) { 0 };
   mach_msg_return_t msg_return;
-  if (timeout)
-    msg_return = mach_msg(&buffer->message.header,
-                                          MACH_RCV_MSG | MACH_RCV_TIMEOUT,
-                                          0,
-                                          sizeof(struct mach_buffer),
-                                          port,
-                                          10,
-                                          MACH_PORT_NULL             );
-  else 
-    msg_return = mach_msg(&buffer->message.header,
-                                          MACH_RCV_MSG,
-                                          0,
-                                          sizeof(struct mach_buffer),
-                                          port,
-                                          MACH_MSG_TIMEOUT_NONE,
-                                          MACH_PORT_NULL             );
+  msg_return = mach_msg(&buffer->message.header,
+                                        MACH_RCV_MSG,
+                                        0,
+                                        sizeof(struct mach_buffer),
+                                        port,
+                                        MACH_MSG_TIMEOUT_NONE,
+                                        MACH_PORT_NULL             );
 
   if (msg_return != MACH_MSG_SUCCESS) {
     buffer->message.descriptor.address = NULL;
@@ -851,7 +841,6 @@ static void mach_receive_message(mach_port_t port, struct mach_buffer* buffer,
 
 static bool mach_send_message(mach_port_t port, char* message, uint32_t len) {
   if (!message || !port) {
-    if (message) free(message);
     return false;
   }
 
@@ -887,7 +876,7 @@ static void* mach_connection_handler(void *context) {
   struct mach_server* server = context;
   while (server->is_running) {
     struct mach_buffer* buffer = malloc(sizeof(struct mach_buffer));
-    mach_receive_message(server->port, buffer, false);
+    mach_receive_message(server->port, buffer);
     server->handler(buffer);
   }
 
@@ -962,7 +951,6 @@ static void do_handshake(struct mach_buffer* buffer)
 static void handle_message(struct mach_buffer* buffer)
 {
     const char* message = buffer->message.descriptor.address;
-    NSLog(@"%s", message);
     Token token = get_token(&message);
     if (token_equals(token, "handshake")) {
         do_handshake(buffer);

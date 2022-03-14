@@ -77,8 +77,7 @@ char* mach_send_message(mach_port_t port, char* message, uint32_t len,
                                               0,
                                               MACH_MSGH_BITS_COMPLEX       );
   } else {
-    msg.header.msgh_bits = MACH_MSGH_BITS_SET(MACH_MSG_TYPE_MOVE_SEND_ONCE
-                                              & MACH_MSGH_BITS_REMOTE_MASK,
+    msg.header.msgh_bits = MACH_MSGH_BITS_SET(MACH_MSG_TYPE_COPY_SEND,
                                               0,
                                               0,
                                               MACH_MSGH_BITS_COMPLEX       );
