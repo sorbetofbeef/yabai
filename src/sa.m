@@ -527,7 +527,7 @@ out:
 
 static bool scripting_addition_run_command(char *message)
 {
-    return mach_send_message(mach_get_bs_port(), message, strlen(message), true);
+    return mach_send_message(mach_get_bs_port(), message, strlen(message), false);
 }
 
 bool scripting_addition_create_space(uint64_t sid)

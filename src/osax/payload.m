@@ -999,7 +999,6 @@ static void handle_message(struct mach_buffer* buffer)
     } else if (token_equals(token, "window_movement_group_remove")) {
         do_window_movement_group_remove(message);
     }
-    mach_msg_destroy(&buffer->message.header);
     free(buffer);
 }
 
