@@ -1,8 +1,7 @@
 #ifndef EVENT_TAP_H
 #define EVENT_TAP_H
 
-#define EVENT_MASK_MOUSE (1 << kCGEventMouseMoved) | \
-                         (1 << kCGEventLeftMouseDown) | \
+#define EVENT_MASK_MOUSE (1 << kCGEventLeftMouseDown) | \
                          (1 << kCGEventLeftMouseUp) | \
                          (1 << kCGEventLeftMouseDragged) | \
                          (1 << kCGEventRightMouseDown) | \

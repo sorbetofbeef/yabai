@@ -29,12 +29,6 @@ static EVENT_TAP_CALLBACK(mouse_handler)
     case kCGEventRightMouseDragged: {
         event_loop_post(&g_event_loop, MOUSE_DRAGGED, (void *) CFRetain(cgevent), 0, NULL);
     } break;
-    case kCGEventMouseMoved: {
-        uint8_t mod = mouse_mod_from_cgflags(CGEventGetFlags(cgevent));
-        if (mod == g_mouse_state.modifier) return cgevent;
-
-        event_loop_post(&g_event_loop, MOUSE_MOVED, (void *) CFRetain(cgevent), mod, NULL);
-    } break;
     }
 
     return cgevent;
