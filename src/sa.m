@@ -4,8 +4,7 @@ extern int csr_get_active_config(uint32_t *config);
 #define CSR_ALLOW_UNRESTRICTED_FS 0x02
 #define CSR_ALLOW_TASK_FOR_PID    0x04
 
-#define SA_SOCKET_PATH_FMT      "/tmp/yabai-sa_%s.socket"
-extern char g_sa_socket_file[MAXLEN];
+mach_port_t g_sa_port;
 
 @interface SALoader : NSObject<SBApplicationDelegate> {}
 - (void) eventDidFail:(const AppleEvent*)event withError:(NSError*)error;
@@ -387,8 +386,6 @@ static bool drop_sudo_privileges_and_set_sa_socket_path(void)
 
     struct passwd *pw = getpwuid(uid);
     if (!pw) return false;
-
-    snprintf(g_sa_socket_file, sizeof(g_sa_socket_file), SA_SOCKET_PATH_FMT, pw->pw_name);
     return true;
 }
 
@@ -411,6 +408,7 @@ static bool mach_loader_inject_payload(void)
 
 int scripting_addition_load(void)
 {
+    g_sa_port = 0;
     int result = 0;
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
@@ -527,7 +525,8 @@ out:
 
 static bool scripting_addition_run_command(char *message)
 {
-    mach_send_message(mach_get_bs_port(), message, strlen(message), false);
+    if (!g_sa_port) g_sa_port = mach_get_bs_port();
+    mach_send_message(g_sa_port, message, strlen(message), false);
     return true;
 }
 
