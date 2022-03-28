@@ -708,6 +708,7 @@ void view_add_window_node(struct view *view, struct window *window)
         view->root->window_list[0] = window->id;
         view->root->window_order[0] = window->id;
         view->root->window_count = 1;
+        view_flush(view);
     } else if (view->layout == VIEW_BSP) {
         struct window_node *leaf = NULL;
 
