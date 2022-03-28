@@ -1452,10 +1452,13 @@ void window_manager_toggle_window_parent(struct space_manager *sm, struct window
     if (node->zoom) {
         node->zoom = NULL;
     } else if (node->parent) {
+        node->parent->left->zoom = NULL;
+        node->parent->right->zoom = NULL;
+
         node->zoom = node->parent;
     }
 
-    window_node_flush(node);
+    window_node_flush(node->parent);
 }
 
 void window_manager_toggle_window_fullscreen(struct space_manager *sm, struct window_manager *wm, struct window *window)
