@@ -596,7 +596,7 @@ bool scripting_addition_move_window(uint32_t wid, int x, int y)
 bool scripting_addition_set_opacity(uint32_t wid, float opacity, float duration)
 {
     char message[MAXLEN];
-    snprintf(message, sizeof(message), "window_alpha_fade %d %f %f", wid, opacity, duration);
+    snprintf(message, sizeof(message), "window_alpha %d %f", wid, opacity);
     return scripting_addition_run_command(message);
 }
 

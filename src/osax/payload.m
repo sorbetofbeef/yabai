@@ -678,19 +678,6 @@ static void do_window_alpha(const char *message)
     CGSSetWindowAlpha(_connection, wid, alpha);
 }
 
-static void do_window_alpha_fade(const char *message)
-{
-    Token wid_token = get_token(&message);
-    uint32_t wid = token_to_uint32t(wid_token);
-    if (!wid) return;
-
-    Token alpha_token = get_token(&message);
-    float alpha = token_to_float(alpha_token);
-    Token duration_token = get_token(&message);
-    float duration = token_to_float(duration_token);
-    CGSSetWindowListAlpha(_connection, &wid, 1, alpha, duration);
-}
-
 static void do_window_level(const char *message)
 {
     Token wid_token = get_token(&message);
@@ -803,26 +790,6 @@ static void do_window_movement_group_remove(const char *message)
     CGSRemoveWindowFromWindowMovementGroup(_connection, parent, child);
 }
 
-static mach_port_t mach_get_bs_port() {
-  mach_port_name_t task = mach_task_self();
-
-  mach_port_t bs_port;
-  if (task_get_special_port(task,
-                            TASK_BOOTSTRAP_PORT,
-                            &bs_port            ) != KERN_SUCCESS) {
-    return 0;
-  }
-
-  mach_port_t port;
-  if (bootstrap_look_up(bs_port,
-                        "git.felix.fyabai",
-                        &port                  ) != KERN_SUCCESS) {
-    return 0;
-  }
-
-  return port;
-}
-
 static void mach_receive_message(mach_port_t port, struct mach_buffer* buffer) {
   *buffer = (struct mach_buffer) { 0 };
   mach_msg_return_t msg_return;
@@ -933,10 +900,10 @@ static void do_handshake(struct mach_buffer* buffer)
     if (move_space_fp)                     attrib |= OSAX_ATTRIB_MOV_SPACE;
     if (set_front_window_fp)               attrib |= OSAX_ATTRIB_SET_WINDOW;
 
-    char bytes[BUF_SIZE] = {};
     int version_length = strlen(OSAX_VERSION);
     int attrib_length = sizeof(uint32_t);
     int bytes_length = version_length + 1 + attrib_length;
+    char* bytes = malloc(bytes_length);
 
     memcpy(bytes, OSAX_VERSION, version_length);
     memcpy(bytes + version_length + 1, &attrib, attrib_length);
@@ -946,6 +913,7 @@ static void do_handshake(struct mach_buffer* buffer)
     mach_send_message(buffer->message.header.msgh_remote_port,
                       bytes,
                       bytes_length + 1                        );
+    free(bytes);
 }
 
 static void handle_message(struct mach_buffer* buffer)
@@ -968,8 +936,6 @@ static void handle_message(struct mach_buffer* buffer)
         do_window_move(message);
     } else if (token_equals(token, "window_alpha")) {
         do_window_alpha(message);
-    } else if (token_equals(token, "window_alpha_fade")) {
-        do_window_alpha_fade(message);
     } else if (token_equals(token, "window_level")) {
         do_window_level(message);
     } else if (token_equals(token, "window_sticky")) {

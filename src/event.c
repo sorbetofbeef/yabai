@@ -320,8 +320,6 @@ static EVENT_CALLBACK(EVENT_HANDLER_APPLICATION_HIDDEN)
 
 static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_CREATED)
 {
-    double opacity = g_window_manager.normal_window_opacity;
-    g_window_manager.normal_window_opacity = 0.;
     uint32_t window_id = ax_window_id(context);
     if (!window_id) goto err;
 
@@ -338,6 +336,8 @@ static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_CREATED)
     if (!window) goto out;
 
     if (window_manager_should_manage_window(window) && !window_manager_find_managed_window(&g_window_manager, window)) {
+        scripting_addition_set_opacity(window_id, 0.f, 0.f);
+
         uint64_t sid;
 
         if (g_window_manager.window_origin_mode == WINDOW_ORIGIN_DEFAULT) {
@@ -350,18 +350,15 @@ static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_CREATED)
 
         struct view *view = space_manager_tile_window_on_space(&g_space_manager, window, sid);
         window_manager_add_managed_window(&g_window_manager, window, view);
+        scripting_addition_set_opacity(window_id, g_window_manager.normal_window_opacity, 0.f);
     }
 
     event_signal_push(SIGNAL_WINDOW_CREATED, window);
-    g_window_manager.normal_window_opacity = opacity;
-    scripting_addition_set_opacity(window_id, opacity, 0.f);
     return EVENT_SUCCESS;
 
 err:
     CFRelease(context);
 out:
-    g_window_manager.normal_window_opacity = opacity;
-    scripting_addition_set_opacity(window_id, 1.f, 0.f);
     return EVENT_FAILURE;
 }
 

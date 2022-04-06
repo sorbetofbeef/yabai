@@ -975,7 +975,6 @@ struct window *window_manager_create_and_add_window(struct space_manager *sm, st
     }
 
     window_manager_purify_window(wm, window);
-    window_manager_set_window_opacity(wm, window, wm->normal_window_opacity);
 
     if (!window_observe(window)) {
         debug("%s: could not observe %s %d\n", __FUNCTION__, window->application->name, window->id);
@@ -985,6 +984,7 @@ struct window *window_manager_create_and_add_window(struct space_manager *sm, st
         window_destroy(window);
         return NULL;
     }
+
 
     if (window_manager_find_lost_focused_event(wm, window->id)) {
         event_loop_post(&g_event_loop, WINDOW_FOCUSED, (void *)(intptr_t) window->id, 0, NULL);
