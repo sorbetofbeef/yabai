@@ -601,10 +601,10 @@ struct window_node *view_find_window_node(struct view *view, uint32_t window_id)
     return NULL;
 }
 
-void view_remove_window_node(struct view *view, struct window *window)
+struct window_node *view_remove_window_node(struct view *view, struct window *window)
 {
     struct window_node *node = view_find_window_node(view, window->id);
-    if (!node) return;
+    if (!node) return NULL;
 
     if (node->window_count > 1) {
         bool removed_entry = false;
@@ -626,7 +626,7 @@ void view_remove_window_node(struct view *view, struct window *window)
         assert(removed_order);
         --node->window_count;
 
-        return;
+        return NULL;
     }
 
     if (node == view->root) {
@@ -634,7 +634,7 @@ void view_remove_window_node(struct view *view, struct window *window)
         insert_feedback_destroy(node);
         memset(node, 0, sizeof(struct window_node));
         view_update(view);
-        return;
+        return NULL;
     }
 
     struct window_node *parent = node->parent;
@@ -680,7 +680,10 @@ void view_remove_window_node(struct view *view, struct window *window)
     if (g_space_manager.auto_balance) {
         window_node_equalize(view->root, SPLIT_X | SPLIT_Y);
         view_update(view);
+        return view->root;
     }
+
+    return parent;
 }
 
 void view_stack_window_node(struct view *view, struct window_node *node, struct window *window)
@@ -701,14 +704,14 @@ void view_stack_window_node(struct view *view, struct window_node *node, struct 
     }
 }
 
-void view_add_window_node(struct view *view, struct window *window)
+struct window_node *view_add_window_node(struct view *view, struct window *window)
 {
     if (!window_node_is_occupied(view->root) &&
         window_node_is_leaf(view->root)) {
         view->root->window_list[0] = window->id;
         view->root->window_order[0] = window->id;
         view->root->window_count = 1;
-        view_flush(view);
+        return view->root;
     } else if (view->layout == VIEW_BSP) {
         struct window_node *leaf = NULL;
 
@@ -724,7 +727,7 @@ void view_add_window_node(struct view *view, struct window *window)
 
                 if (do_stack) {
                     view_stack_window_node(view, leaf, window);
-                    return;
+                    return leaf;
                 }
             }
         }
@@ -737,11 +740,16 @@ void view_add_window_node(struct view *view, struct window *window)
         if (g_space_manager.auto_balance) {
             window_node_equalize(view->root, SPLIT_X | SPLIT_Y);
             view_update(view);
-            view_flush(view);
+            return view->root;
         }
+
+        return leaf;
     } else if (view->layout == VIEW_STACK) {
         view_stack_window_node(view, view->root, window);
+        return view->root;
     }
+
+    return NULL;
 }
 
 uint32_t *view_find_window_list(struct view *view, int *window_count)
