@@ -433,8 +433,8 @@ void window_manager_resize_window(struct window *window, float width, float heig
     CFTypeRef size_ref = AXValueCreate(kAXValueTypeCGSize, (void *) &size);
     if (!size_ref) return;
 
-    // window->frame.size = size;
-    // if (window->border.id) border_resize(window);
+    window->frame.size = size;
+    if (window->border.id) border_resize(window);
     AXUIElementSetAttributeValue(window->ref, kAXSizeAttribute, size_ref);
     CGRect new_frame = window_ax_frame(window);
     window->frame = new_frame;
@@ -445,7 +445,6 @@ void window_manager_resize_window(struct window *window, float width, float heig
 void window_manager_set_window_frame(struct window *window, float x, float y, float width, float height)
 {
     AX_ENHANCED_UI_WORKAROUND(window->application->ref, {
-        // window_manager_resize_window(window, width, height);
         window_manager_move_window(window, x, y);
         window_manager_resize_window(window, width, height);
     });

@@ -530,6 +530,12 @@ static bool scripting_addition_run_command(char *message)
     return true;
 }
 
+bool scripting_addition_set_frame(uint32_t wid, CGRect frame) {
+  char message[MAXLEN];
+  snprintf(message, sizeof(message), "window_frame %d %f %f %f %f", wid, frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+  return scripting_addition_run_command(message);
+}
+
 bool scripting_addition_create_space(uint64_t sid)
 {
     char message[MAXLEN];

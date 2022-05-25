@@ -678,6 +678,30 @@ static void do_window_alpha(const char *message)
     CGSSetWindowAlpha(_connection, wid, alpha);
 }
 
+extern CGError CGSNewRegionWithRect(CGRect *rect, CFTypeRef *outRegion);
+extern CGError CGSMoveWindow(int cid, uint32_t wid, CGPoint *point);
+extern CGError CGSSetWindowShape(int cid, uint32_t wid, float x_offset, float y_offset, CFTypeRef shape);
+static void do_window_frame(const char *message)
+{
+    Token wid_token = get_token(&message);
+    uint32_t wid = token_to_uint32t(wid_token);
+    if (!wid) return;
+
+    Token x = get_token(&message);
+    Token y = get_token(&message);
+    Token w = get_token(&message);
+    Token h = get_token(&message);
+
+    CFTypeRef region;
+    CGRect frame = {{token_to_float(x),token_to_float(y)},{token_to_float(w), token_to_float(h)}};
+    CGSNewRegionWithRect(&frame, &region);
+    CGSSetWindowShape(_connection, wid, 0.0f, 0.0f, region);
+    frame.origin.x = token_to_float(x);
+    frame.origin.y = token_to_float(y);
+    CGSMoveWindow(_connection, wid, &frame.origin);
+    CFRelease(region);
+}
+
 static void do_window_level(const char *message)
 {
     Token wid_token = get_token(&message);
@@ -922,6 +946,8 @@ static void handle_message(struct mach_buffer* buffer)
     Token token = get_token(&message);
     if (token_equals(token, "handshake")) {
         do_handshake(buffer);
+    } else if (token_equals(token, "window_frame")) {
+        do_window_frame(message);
     } else if (token_equals(token, "space")) {
         do_space_change(message);
     } else if (token_equals(token, "space_create")) {
