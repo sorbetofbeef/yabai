@@ -425,14 +425,20 @@ void window_manager_move_window(struct window *window, float x, float y)
 
 void window_manager_resize_window(struct window *window, float width, float height)
 {
+    if (window->frame.size.width == width
+        && window->frame.size.height == height)
+      return;
+
     CGSize size = CGSizeMake(width, height);
     CFTypeRef size_ref = AXValueCreate(kAXValueTypeCGSize, (void *) &size);
     if (!size_ref) return;
 
-    window->frame.size = size;
-
-    if (window->border.id) border_resize(window);
+    // window->frame.size = size;
+    // if (window->border.id) border_resize(window);
     AXUIElementSetAttributeValue(window->ref, kAXSizeAttribute, size_ref);
+    CGRect new_frame = window_ax_frame(window);
+    window->frame = new_frame;
+    if (window->border.id) border_resize(window);
     CFRelease(size_ref);
 }
 
