@@ -463,7 +463,7 @@ struct window *window_create(struct application *application, AXUIElementRef win
     window->application = application;
     window->ref = window_ref;
     window->id = window_id;
-    SLSGetWindowOwner(g_connection, window->id, &window->connection);
+    window->id_ptr = &window->id;
     window->frame = window_ax_frame(window);
     window->is_minimized = window_is_minimized(window);
     window->is_fullscreen = window_is_fullscreen(window) || space_is_fullscreen(window_space(window));
