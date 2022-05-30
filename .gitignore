@@ -1,4 +1,6 @@
 .DS_Store
+.ccls-cache
+compile_commands.json
 /bin
 /archive
 /src/osax/loader_bin.c
