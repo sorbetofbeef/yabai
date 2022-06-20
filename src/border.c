@@ -85,7 +85,7 @@ void border_create(struct window *window)
     SLSSetWindowResolution(g_connection, window->border.id, 2.0f);
     SLSSetWindowOpacity(g_connection, window->border.id, 0);
     SLSSetWindowLevel(g_connection, window->border.id, window_level(window));
-    SLSSetWindowBackgroundBlurRadius(g_connection, window->border.id, 30);
+    SLSSetWindowBackgroundBlurRadius(g_connection, window->border.id, 20);
     window->border.context = SLWindowContextCreate(g_connection, window->border.id, 0);
     CGContextSetLineWidth(window->border.context, g_window_manager.border_width);
     CGContextSetRGBStrokeColor(window->border.context,
