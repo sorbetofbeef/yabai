@@ -442,7 +442,12 @@ static EVENT_CALLBACK(EVENT_HANDLER_WINDOW_MOVED)
         return EVENT_FAILURE;
     }
 
-    if (window->border.id && !window->border.in_movement_group) SLSMoveWindow(g_connection, window->border.id, &new_origin);
+    if (window->border.id && !window->border.in_movement_group) {
+      CGPoint border_pos = new_origin;
+      border_pos.x -= 4;
+      border_pos.y -= 4;
+      SLSMoveWindow(g_connection, window->border.id, &border_pos);
+    }
     debug("%s: %s %d\n", __FUNCTION__, window->application->name, window->id);
     event_signal_push(SIGNAL_WINDOW_MOVED, window);
     window->frame.origin = new_origin;
@@ -741,6 +746,8 @@ static EVENT_CALLBACK(EVENT_HANDLER_MOUSE_UP)
       scripting_addition_remove_from_window_movement_group(g_mouse_state.window->border.id, g_mouse_state.window->id);
       g_mouse_state.window->border.in_movement_group = false;
       CGPoint new_origin = window_ax_origin(g_mouse_state.window);
+      new_origin.x -= 4;
+      new_origin.y -= 4;
       SLSMoveWindow(g_connection, g_mouse_state.window->border.id, &new_origin);
     } 
 

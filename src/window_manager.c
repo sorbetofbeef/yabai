@@ -402,7 +402,12 @@ void window_manager_move_window(struct window *window, float x, float y)
     if (!position_ref) return;
 
     window->frame.origin = position;
-    if (window->border.id) SLSMoveWindow(g_connection, window->border.id, &position);
+    if (window->border.id) {
+      CGPoint border_pos = position;
+      border_pos.x -= 4;
+      border_pos.y -= 4;
+      SLSMoveWindow(g_connection, window->border.id, &border_pos);
+    }
     AXUIElementSetAttributeValue(window->ref, kAXPositionAttribute, position_ref);
 
     CFRelease(position_ref);
