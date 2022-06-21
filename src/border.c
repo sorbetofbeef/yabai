@@ -16,7 +16,8 @@ void border_redraw(struct window *window)
     SLSDisableUpdate(g_connection);
     CGContextClearRect(window->border.context, window->border.frame);
     CGContextAddPath(window->border.context, window->border.path);
-    CGContextDrawPath(window->border.context, kCGPathFillStroke);
+    // CGContextDrawPath(window->border.context, kCGPathFillStroke);
+    CGContextStrokePath(window->border.context);
     CGContextFlush(window->border.context);
     SLSReenableUpdate(g_connection);
 }
@@ -30,7 +31,7 @@ void border_activate(struct window *window)
                                g_window_manager.active_border_color.g,
                                g_window_manager.active_border_color.b,
                                g_window_manager.active_border_color.a);
-    CGContextSetRGBFillColor(window->border.context, 1, 1, 1, 0);
+    CGContextSetRGBFillColor(window->border.context, 1, 1, 1, 0x15 / 255.);
     border_redraw(window);
 }
 
@@ -85,7 +86,7 @@ void border_create(struct window *window)
     SLSSetWindowResolution(g_connection, window->border.id, 2.0f);
     SLSSetWindowOpacity(g_connection, window->border.id, 0);
     SLSSetWindowLevel(g_connection, window->border.id, window_level(window));
-    SLSSetWindowBackgroundBlurRadius(g_connection, window->border.id, 20);
+    // SLSSetWindowBackgroundBlurRadius(g_connection, window->border.id, 20);
     window->border.context = SLWindowContextCreate(g_connection, window->border.id, 0);
     CGContextSetLineWidth(window->border.context, g_window_manager.border_width);
     CGContextSetRGBStrokeColor(window->border.context,
@@ -130,7 +131,8 @@ void border_resize(struct window *window)
     SLSSetWindowShape(g_connection, window->border.id, 0.0f, 0.0f, window->border.region);
     CGContextClearRect(window->border.context, window->border.frame);
     CGContextAddPath(window->border.context, window->border.path);
-    CGContextDrawPath(window->border.context, kCGPathFillStroke);
+    // CGContextDrawPath(window->border.context, kCGPathFillStroke);
+    CGContextStrokePath(window->border.context);
     CGContextFlush(window->border.context);
     SLSReenableUpdate(g_connection);
 }
