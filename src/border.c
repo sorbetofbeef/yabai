@@ -4,11 +4,13 @@ extern struct window_manager g_window_manager;
 static void border_order_in(struct window *window)
 {
     SLSOrderWindow(g_connection, window->border.id, -1, window->id);
+    scripting_addition_add_to_window_ordering_group(window->id, window->border.id);
 }
 
 static void border_order_out(struct window *window)
 {
-    // SLSOrderWindow(g_connection, window->border.id, 0, window->id);
+    scripting_addition_remove_from_window_ordering_group(window->id, window->border.id);
+    SLSOrderWindow(g_connection, window->border.id, 0, window->id);
 }
 
 void border_redraw(struct window *window)
@@ -52,7 +54,6 @@ void border_enter_fullscreen(struct window *window)
 {
     if (!window->border.id) return;
 
-    scripting_addition_remove_from_window_ordering_group(window->id, window->border.id);
     border_order_out(window);
 }
 
@@ -61,7 +62,6 @@ void border_exit_fullscreen(struct window *window)
     if (!window->border.id) return;
 
     border_order_in(window);
-    scripting_addition_add_to_window_ordering_group(window->id, window->border.id);
 }
 
 extern CGError SLSSetWindowBackgroundBlurRadius(int cid, uint32_t wid, uint32_t radius);
@@ -74,6 +74,7 @@ void border_create(struct window *window)
     CGRect frame = CGRectInset(window->frame, -4, -4);
     CGSNewRegionWithRect(&frame, &window->border.region);
     window->border.frame.size = frame.size;
+    window->border.frame.origin = CGPointZero;
 
     window->border.path = CGPathCreateMutable();
     frame.size = window->frame.size;
@@ -99,7 +100,6 @@ void border_create(struct window *window)
                                g_window_manager.normal_border_color.g,
                                g_window_manager.normal_border_color.b,
                                g_window_manager.normal_border_color.a);
-    scripting_addition_add_to_window_ordering_group(window->id, window->border.id);
     window->border.in_movement_group = false;
 
     border_redraw(window);
