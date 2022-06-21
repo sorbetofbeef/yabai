@@ -420,7 +420,7 @@ void window_manager_resize_window(struct window *window, float width, float heig
         && window->frame.size.height == height)
       return;
 
-    CGSize size = CGSizeMake(width, height);
+    CGSize size = CGSizeMake((uint32_t)(width + 0.5f), (uint32_t)(height + 0.5f));
     CFTypeRef size_ref = AXValueCreate(kAXValueTypeCGSize, (void *) &size);
     if (!size_ref) return;
 
@@ -429,7 +429,9 @@ void window_manager_resize_window(struct window *window, float width, float heig
     AXUIElementSetAttributeValue(window->ref, kAXSizeAttribute, size_ref);
     CGRect new_frame = window_ax_frame(window);
     window->frame = new_frame;
-    if (window->border.id) border_resize(window);
+    if (window->border.id && !CGSizeEqualToSize(new_frame.size, size))
+      border_resize(window);
+
     CFRelease(size_ref);
 }
 

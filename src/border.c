@@ -119,6 +119,7 @@ void border_resize(struct window *window)
     CGRect frame = CGRectInset(window->frame, -4, -4);
     CGSNewRegionWithRect(&frame, &window->border.region);
     window->border.frame.size = frame.size;
+    window->border.frame.origin = CGPointZero;
 
     if (window->border.path) CGPathRelease(window->border.path);
     window->border.path = CGPathCreateMutable();
@@ -129,7 +130,7 @@ void border_resize(struct window *window)
 
     SLSDisableUpdate(g_connection);
     SLSSetWindowShape(g_connection, window->border.id, 0.0f, 0.0f, window->border.region);
-    CGContextClearRect(window->border.context, window->border.frame);
+    CGContextClearRect(window->border.context, CGRectInset(window->border.frame, -1, -1));
     CGContextAddPath(window->border.context, window->border.path);
     // CGContextDrawPath(window->border.context, kCGPathFillStroke);
     CGContextStrokePath(window->border.context);
