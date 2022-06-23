@@ -398,6 +398,9 @@ enum window_op_error window_manager_resize_window_relative(struct window_manager
 
 void window_manager_move_window(struct window *window, float x, float y)
 {
+    if (window->frame.origin.x == x && window->frame.origin.y == y)
+      return;
+
     CGPoint position = CGPointMake(x, y);
     CFTypeRef position_ref = AXValueCreate(kAXValueTypeCGPoint, (void *) &position);
     if (!position_ref) return;
