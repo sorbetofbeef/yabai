@@ -64,6 +64,19 @@ void border_exit_fullscreen(struct window *window)
     border_order_in(window);
 }
 
+extern CGError SLSWindowSetShadowProperties(uint32_t wid, CFDictionaryRef options);
+static inline void border_disable_shadow(struct window* window)
+{
+    int t = 0;
+    CFNumberRef density = CFNumberCreate(NULL, kCFNumberSInt32Type, &t);
+    const void *keys[1] = { CFSTR("com.apple.WindowShadowDensity") };
+    const void *values[1] = { density };
+    CFDictionaryRef options = CFDictionaryCreate(NULL, keys, values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    SLSWindowSetShadowProperties(window->border.id, options);
+    CFRelease(density);
+    CFRelease(options);
+}
+
 extern CGError SLSSetWindowBackgroundBlurRadius(int cid, uint32_t wid, uint32_t radius);
 void border_create(struct window *window)
 {
@@ -88,6 +101,7 @@ void border_create(struct window *window)
     SLSSetWindowOpacity(g_connection, window->border.id, 0);
     SLSSetWindowLevel(g_connection, window->border.id, window_level(window));
     SLSSetWindowBackgroundBlurRadius(g_connection, window->border.id, 20);
+    border_disable_shadow(window);
     window->border.context = SLWindowContextCreate(g_connection, window->border.id, 0);
     CGContextSetLineWidth(window->border.context, g_window_manager.border_width);
     CGContextSetRGBStrokeColor(window->border.context,
